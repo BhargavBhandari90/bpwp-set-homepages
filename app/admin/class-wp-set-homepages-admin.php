@@ -59,6 +59,16 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 				'default',
 				array( 'label_for' => 'front-static-pages-logged-in' )
 			);
+
+			// Add field to reading page.
+			add_settings_field(
+				'front-static-pages-user-roles',
+				esc_html__( 'Homepage for Users roles', 'bpwp-set-homepages' ),
+				array( $this, 'bpwpsh_user_role_setting_cb' ),
+				'reading',
+				'default',
+				array( 'label_for' => 'front-static-pages-logged-in' )
+			);
 		}
 
 		/**
@@ -88,6 +98,46 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 		}
 
 		/**
+		 * Callback to display page selection.
+		 *
+		 * @return void
+		 */
+		public function bpwpsh_user_role_setting_cb() {
+			// Get list of user roles that the current user is allowed to edit.
+			$editable_roles = array_reverse( get_editable_roles() );
+			?>
+			<fieldset>
+				<legend class="screen-reader-text">
+					<span><?php esc_html_e( 'Users roles' ); ?></span>
+				</legend>
+				<?php
+				if ( ! empty( $editable_roles ) ) {
+					$values = get_option( 'page_on_user_role' );
+					echo '<ul>';
+					foreach ( $editable_roles as $role => $details ) {
+						$name = translate_user_role( $details['name'] );
+						printf(
+							'<li><label>%1$s: %2$s</label></li>',
+							esc_html( $name ),
+							wp_dropdown_pages(
+								array(
+									'name'              => "page_on_user_role[$role]",
+									'echo'              => 0,
+									'show_option_none'  => __( '&mdash; Select &mdash;', 'bpwp-set-homepages' ),
+									'option_none_value' => '0',
+									'selected'          => ! empty( $values[ $role ] ) ? (int) $values[ $role ] : 0,
+								)
+							)
+						);
+					}
+					echo '</ul>';
+				}
+				?>
+			</fieldset>
+			<?php
+		}
+
+		/**
 		 * Add new field to allowed option.
 		 * By adding this field to allowed option, WP handles saving data to options.
 		 *
@@ -99,6 +149,7 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 			// Add new option to allowed list.
 			if ( isset( $allowed_options['reading'] ) ) {
 				$allowed_options['reading'][] = 'page_on_front_logged_in';
+				$allowed_options['reading'][] = 'page_on_user_role';
 			}
 
 			return $allowed_options;
