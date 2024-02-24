@@ -50,25 +50,56 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 				return;
 			}
 
-			// Add field to reading page.
-			add_settings_field(
-				'front-static-pages-logged-in',
-				esc_html__( 'Homepage for logged-in Users', 'bpwp-set-homepages' ),
-				array( $this, 'bpbpwpsh_setting_callback_function' ),
-				'reading',
-				'default',
-				array( 'label_for' => 'front-static-pages-logged-in' )
+			// Add setting section to reading page.
+			add_settings_section(
+				'bpwpsh_user_role_setting_section',
+				esc_html__( 'Homepage for Users roles', 'bpwp-set-homepages' ),
+				'',
+				'reading'
 			);
 
 			// Add field to reading page.
 			add_settings_field(
-				'front-static-pages-user-roles',
-				esc_html__( 'Homepage for Users roles', 'bpwp-set-homepages' ),
-				array( $this, 'bpwpsh_user_role_setting_cb' ),
+				'front-static-pages-logged-in',
+				esc_html__( 'Homepage for logged-in Users ( Default )', 'bpwp-set-homepages' ),
+				array( $this, 'bpbpwpsh_setting_callback_function' ),
 				'reading',
-				'default',
+				'bpwpsh_user_role_setting_section',
 				array( 'label_for' => 'front-static-pages-logged-in' )
 			);
+
+			// Get list of user roles that the current user is allowed to edit.
+			$editable_roles = array_reverse( get_editable_roles() );
+
+			if ( ! empty( $editable_roles ) && array_key_exists( 'administrator', $editable_roles ) ) {
+				unset( $editable_roles['administrator'] );
+			}
+
+			if ( ! empty( $editable_roles ) ) {
+				// Get stored values.
+				$values = get_option( 'page_on_front_user_role' );
+
+				// Loop through all roles.
+				foreach ( $editable_roles as $role => $details ) {
+
+					// Get role name.
+					$name = translate_user_role( $details['name'] );
+
+					// Add setting field.
+					add_settings_field(
+						"page_on_front_user_role[$role]",
+						esc_html( $name ),
+						array( $this, 'bpwpsh_user_role_setting_cb' ),
+						'reading',
+						'bpwpsh_user_role_setting_section',
+						array(
+							'label_for' => "page_on_front_user_role[$role]",
+							'value'     => ! empty( $values[ $role ] ) ? (int) $values[ $role ] : 0,
+							'role'      => $role,
+						)
+					);
+				}
+			}
 		}
 
 		/**
@@ -100,41 +131,22 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 		/**
 		 * Callback to display page selection.
 		 *
+		 * @param array $args Extra arguments that get passed to the callback function.
 		 * @return void
 		 */
-		public function bpwpsh_user_role_setting_cb() {
-			// Get list of user roles that the current user is allowed to edit.
-			$editable_roles = array_reverse( get_editable_roles() );
-			?>
-			<fieldset>
-				<legend class="screen-reader-text">
-					<span><?php esc_html_e( 'Users roles' ); ?></span>
-				</legend>
-				<?php
-				if ( ! empty( $editable_roles ) ) {
-					$values = get_option( 'page_on_user_role' );
-					echo '<ul>';
-					foreach ( $editable_roles as $role => $details ) {
-						$name = translate_user_role( $details['name'] );
-						printf(
-							'<li><label>%1$s: %2$s</label></li>',
-							esc_html( $name ),
-							wp_dropdown_pages(
-								array(
-									'name'              => "page_on_user_role[$role]",
-									'echo'              => 0,
-									'show_option_none'  => __( '&mdash; Select &mdash;', 'bpwp-set-homepages' ),
-									'option_none_value' => '0',
-									'selected'          => ! empty( $values[ $role ] ) ? (int) $values[ $role ] : 0,
-								)
-							)
-						);
-					}
-					echo '</ul>';
-				}
-				?>
-			</fieldset>
-			<?php
+		public function bpwpsh_user_role_setting_cb( $args ) {
+
+			$role  = ! empty( $args['role'] ) ? $args['role'] : '';
+			$value = ! empty( $args['value'] ) ? $args['value'] : '';
+
+			wp_dropdown_pages(
+				array(
+					'name'              => esc_html( "page_on_front_user_role[$role]" ),
+					'show_option_none'  => esc_html__( '&mdash; Select &mdash;', 'bpwp-set-homepages' ),
+					'option_none_value' => '0',
+					'selected'          => esc_attr( $value ),
+				)
+			);
 		}
 
 		/**
@@ -149,7 +161,7 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 			// Add new option to allowed list.
 			if ( isset( $allowed_options['reading'] ) ) {
 				$allowed_options['reading'][] = 'page_on_front_logged_in';
-				$allowed_options['reading'][] = 'page_on_user_role';
+				$allowed_options['reading'][] = 'page_on_front_user_role';
 			}
 
 			return $allowed_options;
