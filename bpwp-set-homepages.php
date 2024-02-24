@@ -7,7 +7,7 @@
  * Author URI:      https://bhargavb.com/
  * Text Domain:     bpwp-set-homepages
  * Domain Path:     /languages
- * Version:         1.0.0
+ * Version:         1.1.0
  *
  * @package         Wp_Set_Homepages
  */
@@ -16,7 +16,7 @@ if ( ! defined( 'BPWPSH_VERSION' ) ) {
 	/**
 	 * The version of the plugin.
 	 */
-	define( 'BPWPSH_VERSION', '1.0.0' );
+	define( 'BPWPSH_VERSION', '1.1.0' );
 }
 if ( ! defined( 'BPWPSH_PATH' ) ) {
 	/**
