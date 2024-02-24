@@ -53,6 +53,26 @@ if ( ! class_exists( 'BPWP_Set_Homepages' ) ) {
 				return;
 			}
 
+			$page_on_front_user_role = get_option( 'page_on_front_user_role' );
+			$curr_user_roles         = ! empty( wp_get_current_user()->roles ) ? wp_get_current_user()->roles : array();
+
+			if ( ! empty( $curr_user_roles ) && is_array( $curr_user_roles ) ) {
+				foreach ( $curr_user_roles as $role ) {
+					// Get redirect page id.
+					$redirect_page = ! empty( $page_on_front_user_role[ $role ] ) ? $page_on_front_user_role[ $role ] : 0;
+
+					// Redirect to selected page when got to homepage.
+					if ( is_front_page() &&
+					! empty( $redirect_page ) &&
+					'publish' === get_post_status( $redirect_page ) &&
+					get_the_ID() !== $redirect_page ) {
+
+						wp_safe_redirect( get_permalink( $redirect_page ) );
+						exit;
+					}
+				}
+			}
+
 			$page_on_front           = get_option( 'page_on_front' );
 			$page_on_front_logged_in = empty( $page_on_front_logged_in )
 				? intval( $page_on_front )
@@ -64,7 +84,7 @@ if ( ! class_exists( 'BPWP_Set_Homepages' ) ) {
 				'publish' === get_post_status( $page_on_front_logged_in ) &&
 				get_the_ID() !== $page_on_front_logged_in ) {
 
-				wp_redirect( get_permalink( $page_on_front_logged_in ) );
+				wp_safe_redirect( get_permalink( $page_on_front_logged_in ) );
 				exit;
 			}
 		}
