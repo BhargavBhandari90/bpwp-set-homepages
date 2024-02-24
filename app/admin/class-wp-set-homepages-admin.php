@@ -31,6 +31,11 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 			// Add field to allowed options to save value in options data.
 			add_filter( 'allowed_options', array( $this, 'bpwpsh_allowed_options' ) );
 
+			// Enqueue custom scripts.
+			add_action( 'admin_enqueue_scripts', array( $this, 'bpwpsh_enqueue_scripts' ) );
+
+			// Custom AJAX.
+			add_action( 'wp_ajax_bpwpsh_get_pages', array( $this, 'bpwpsh_get_pages_ajax_callback' ) );
 		}
 
 		/**
@@ -108,24 +113,30 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 		 * @return void
 		 */
 		public function bpbpwpsh_setting_callback_function() {
+			?>
+			<select
+				name="page_on_front_logged_in"
+				class="regular-text blpwpsh-selector"
+			>
+			<?php
+			// Get stored value.
+			$value   = get_option( 'page_on_front_logged_in' );
+			$page_id = ! empty( $value ) ? (int) $value : 0;
 
-			// Page list dropdown.
-			echo wp_dropdown_pages(
-				array(
-					'name'              => 'page_on_front_logged_in',
-					'echo'              => 0,
-					'show_option_none'  => __( '&mdash; Select &mdash;', 'bpwp-set-homepages' ),
-					'option_none_value' => '0',
-					'selected'          => get_option( 'page_on_front_logged_in' ),
-				)
-			);
+			if ( ! empty( $page_id ) ) {
+				// Page Title.
+				$page_title = ! empty( get_the_title( $page_id ) ) ? esc_html( get_the_title( $page_id ) ) : esc_html__( 'Page Not Found', 'blp-blog-reader' );
 
-			// Field description.
-			echo wp_sprintf(
-				/* translators: %s: Setting description. */
-				'<p class="description">%s</p>',
-				esc_html__( 'Redirect logged-in users to this page when they try to access homepage.', 'bpwp-set-homepages' )
-			);
+				printf(
+					'<option value="%1$s" selected>%2$s</option>',
+					esc_attr( $page_id ),
+					esc_html( $page_title )
+				);
+			}
+			?>
+			</select>
+			<p class="description"><?php esc_html_e( 'Redirect logged-in users to this page when they try to access homepage.', 'bpwp-set-homepages' ); ?></p>
+			<?php
 		}
 
 		/**
@@ -138,15 +149,30 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 
 			$role  = ! empty( $args['role'] ) ? $args['role'] : '';
 			$value = ! empty( $args['value'] ) ? $args['value'] : '';
+			?>
+			<select
+				name="page_on_front_user_role[<?php echo esc_attr( $role ); ?>]"
+				class="regular-text blpwpsh-selector"
+				place
+			>
+			<?php
+			// Get stored value.
+			$page_id = ! empty( $value ) ? (int) $value : 0;
 
-			wp_dropdown_pages(
-				array(
-					'name'              => esc_html( "page_on_front_user_role[$role]" ),
-					'show_option_none'  => esc_html__( '&mdash; Select &mdash;', 'bpwp-set-homepages' ),
-					'option_none_value' => '0',
-					'selected'          => esc_attr( $value ),
-				)
-			);
+			if ( ! empty( $page_id ) ) {
+				// Page Title.
+				$page_title = ! empty( get_the_title( $page_id ) ) ? esc_html( get_the_title( $page_id ) ) : esc_html__( 'Page Not Found', 'blp-blog-reader' );
+
+				printf(
+					'<option value="%1$s" selected>%2$s</option>',
+					esc_attr( $page_id ),
+					esc_html( $page_title )
+				);
+			}
+			?>
+			</select>
+			<p class="description"><?php esc_html_e( 'Redirect logged-in users to this page when they try to access homepage.', 'bpwp-set-homepages' ); ?></p>
+			<?php
 		}
 
 		/**
@@ -165,6 +191,112 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 			}
 
 			return $allowed_options;
+		}
+
+		/**
+		 * Enqueue custom admin scripts.
+		 *
+		 * @param string $hook_suffix The current admin page.
+		 */
+		public function bpwpsh_enqueue_scripts( $hook_suffix ) {
+
+			if ( 'options-reading.php' !== $hook_suffix ) {
+				return;
+			}
+
+			$plugin_asset = 'blpwpsh-admin';
+
+			if ( ! defined( 'SCRIPT_DEBUG' ) || ! SCRIPT_DEBUG ) {
+				// If Script debug disabled then include minified files.
+				$plugin_asset .= '.min';
+			}
+
+			// Plugin Related Style and Scripts.
+			wp_enqueue_script(
+				'blpwpsh-admin',
+				trailingslashit( BPWPSH_URL ) . 'app/admin/assets/js/' . $plugin_asset . '.js',
+				array( 'jquery', 'blpwp-sh-select2' ),
+				BPWPSH_VERSION,
+				true
+			);
+
+			/**
+			 * Credits: Select2( https://select2.org/ )
+			 */
+			wp_enqueue_style(
+				'blpwp-sh-select2',
+				trailingslashit( BPWPSH_URL ) . 'assets/css/select2.min.css',
+				array(),
+				BPWPSH_VERSION
+			);
+			wp_enqueue_script(
+				'blpwp-sh-select2',
+				trailingslashit( BPWPSH_URL ) . 'assets/js/select2.min.js',
+				array( 'jquery' ),
+				BPWPSH_VERSION,
+				true
+			);
+		}
+
+		/**
+		 * Get pages ajax callback.
+		 */
+		public function bpwpsh_get_pages_ajax_callback() {
+			$return = array();
+
+			$search_key  = filter_input( INPUT_GET, 'search_key', FILTER_DEFAULT );
+			$search_type = filter_input( INPUT_GET, 'search_type', FILTER_DEFAULT );
+
+			switch ( $search_type ) {
+				case 'memberpress':
+					$allowed_post_types = apply_filters(
+						'blpv_allowed_post_types_memberpress',
+						array(
+							'memberpressproduct',
+						)
+					);
+					break;
+				case 'learndash':
+					$allowed_post_types = apply_filters(
+						'blpv_allowed_post_types_learndash',
+						array(
+							'sfwd-courses',
+						)
+					);
+					break;
+				default:
+					$allowed_post_types = apply_filters(
+						'blp_br_allowed_post_types',
+						array( 'page' )
+					);
+					break;
+			}
+
+			$search_results = new WP_Query(
+				array(
+					's'                   => $search_key,
+					'post_status'         => 'publish',
+					'post_type'           => $allowed_post_types,
+					'ignore_sticky_posts' => 1,
+					'posts_per_page'      => 50,
+				)
+			);
+
+			if ( $search_results->have_posts() ) :
+				while ( $search_results->have_posts() ) :
+					$search_results->the_post();
+					// Shorten the title a little.
+					$title    = ( mb_strlen( get_the_title() ) > 50 )
+						? mb_substr( get_the_title(), 0, 49 ) . '...'
+						: get_the_title();
+					$return[] = array(
+						get_the_ID(),
+						$title,
+					);
+				endwhile;
+			endif;
+			echo wp_json_encode( $return );
+			die;
 		}
 	}
 }
