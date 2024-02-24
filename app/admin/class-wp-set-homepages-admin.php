@@ -125,7 +125,7 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 
 			if ( ! empty( $page_id ) ) {
 				// Page Title.
-				$page_title = ! empty( get_the_title( $page_id ) ) ? esc_html( get_the_title( $page_id ) ) : esc_html__( 'Page Not Found', 'blp-blog-reader' );
+				$page_title = ! empty( get_the_title( $page_id ) ) ? esc_html( get_the_title( $page_id ) ) : esc_html__( 'Page Not Found', 'bpwp-set-homepages' );
 
 				printf(
 					'<option value="%1$s" selected>%2$s</option>',
@@ -161,7 +161,7 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 
 			if ( ! empty( $page_id ) ) {
 				// Page Title.
-				$page_title = ! empty( get_the_title( $page_id ) ) ? esc_html( get_the_title( $page_id ) ) : esc_html__( 'Page Not Found', 'blp-blog-reader' );
+				$page_title = ! empty( get_the_title( $page_id ) ) ? esc_html( get_the_title( $page_id ) ) : esc_html__( 'Page Not Found', 'bpwp-set-homepages' );
 
 				printf(
 					'<option value="%1$s" selected>%2$s</option>',
