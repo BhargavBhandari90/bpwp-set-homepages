@@ -171,7 +171,6 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 			}
 			?>
 			</select>
-			<p class="description"><?php esc_html_e( 'Redirect logged-in users to this page when they try to access homepage.', 'bpwp-set-homepages' ); ?></p>
 			<?php
 		}
 
