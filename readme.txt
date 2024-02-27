@@ -28,6 +28,7 @@ Go to Settings --> Reading page and look for "Homepage for logged-in Users"
 == Screenshots ==
 
 1. Set homepage for logged-in users.
+2. Set homepage for user roles.
 
 == Changelog ==
 
