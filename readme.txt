@@ -3,9 +3,9 @@ Contributors: bhargavbhandari90, hackkzy404, biliplugins
 Donate link: https://www.paypal.me/BnB90/10
 Tags: Homepages, Users
 Requires at least: 4.5
-Tested up to: 6.0.2
+Tested up to: 6.4.3
 Requires PHP: 5.6
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,8 +28,12 @@ Go to Settings --> Reading page and look for "Homepage for logged-in Users"
 == Screenshots ==
 
 1. Set homepage for logged-in users.
+2. Set homepage for user roles.
 
 == Changelog ==
+
+= 1.1.0 =
+* New feature: Set Homepage for users roles.
 
 = 1.0.0 =
 * Initial release.
