@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
 /**
  * Class for repost methods.
  *
@@ -33,7 +33,7 @@ if ( ! class_exists( 'BPWP_Set_Homepages' ) ) {
 		 *
 		 * @return void
 		 */
-		function bpwpsh_homepage_redirect() {
+		public function bpwpsh_homepage_redirect() {
 
 			// Don't execute further, if user is not logged-in.
 			if ( ! is_user_logged_in() ) {

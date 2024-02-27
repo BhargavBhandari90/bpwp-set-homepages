@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
 /**
  * Class for repost methods.
  *
@@ -50,7 +50,7 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 
 			// Bail, if anything goes wrong.
 			if ( ( ! empty( $show_on_front ) && 'page' !== $show_on_front ) ||
-				 ( empty( $page_on_front ) || '0' === $page_on_front ) ) {
+				( empty( $page_on_front ) || '0' === $page_on_front ) ) {
 
 				return;
 			}
@@ -178,7 +178,7 @@ if ( ! class_exists( 'BPWP_Set_Homepages_Admin' ) ) {
 		 * Add new field to allowed option.
 		 * By adding this field to allowed option, WP handles saving data to options.
 		 *
-		 * @param array $allowed_options
+		 * @param array $allowed_options The allowed options list.
 		 * @return array
 		 */
 		public function bpwpsh_allowed_options( $allowed_options ) {
